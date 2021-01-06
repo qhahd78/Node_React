@@ -8,6 +8,7 @@ const port = 5000
 const bodyParser = require('body-parser');
 //User 모델 가져오기 
 const { User } = require("./models/User");
+const config = require("./config/key");
 
 //application/x-www-form-urlencoded -이와 같은 데이터를 분석하여 가져올 수 있게 하는 코드 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -17,14 +18,14 @@ app.use(bodyParser.json());
 
 
 const mongoose = require('mongoose')
-mongoose.connect('mongodb+srv://Umin:0000@boilerplate.hazls.mongodb.net/<dbname>?retryWrites=true&w=majority', {
+mongoose.connect(config.mongoURI, {
     useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false
 }).then(() => console.log('MongoDB Connected...'))
   .catch(err =>console.log(err))
 //req(요청) 및 res(응답)는 Node가 제공하는 동일한 오브젝트이며, 
 //따라서 req.pipe(), req.on('data', callback) 그리고 Express의 
 //관여가 필요 없는 다른 모든 항목을 호출할 수 있습니다.
-app.get('/', (req, res) => res.send('Hello World! 안녕안녕안녕?'))
+app.get('/', (req, res) => res.send('Hello World! 우리옹이 예쁘다 '))
 
 app.post('/register', (req, res) => {
     //회원 가입 할 때 필요한 정보들을 client 에서 가져오면
