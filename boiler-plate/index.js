@@ -33,9 +33,12 @@ app.post('/register', (req, res) => {
     
 
     //body-parser를 이용. 클라이언트에 보내느 정보를 받음. 
+    //req.body 로 모든 정보를 User 모델에 에 넣어줬음 
     const user = new User (req.body)
 
     //정보들을 유저  모델에 저장. 
+    
+    //save 전에 암호화 필요 
     user.save((err, userInfo) => {
         if(err) return res.json({success: false, err})
         return res.status(200).json({
