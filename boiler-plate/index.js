@@ -10,6 +10,8 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 //User 모델 가져오기 
 const { User } = require("./models/User");
+//auth import 해주기.
+const { auth } = require("./middleware/auth");
 const config = require("./config/key");
 
 //application/x-www-form-urlencoded -이와 같은 데이터를 분석하여 가져올 수 있게 하는 코드 
@@ -21,7 +23,8 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const { Router } = require('express');
 mongoose.connect(config.mongoURI, {
     useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false
 }).then(() => console.log('MongoDB Connected...'))
@@ -31,7 +34,7 @@ mongoose.connect(config.mongoURI, {
 //관여가 필요 없는 다른 모든 항목을 호출할 수 있습니다.
 app.get('/', (req, res) => res.send('Hello World! 우리옹이 예쁘다 '))
 
-app.post('/register', (req, res) => {
+app.post('/api/users/register', (req, res) => {
     //회원 가입 할 때 필요한 정보들을 client 에서 가져오면
     //그것들을 데이터 베이스에 넣어준다.
     
@@ -106,6 +109,7 @@ app.post('/login', (req, res) => {
    
    
     // 토큰을 저장한다. 어디에 ? 쿠키 , 로컳스토리지 
+    //3. 비밀번호가 맞다면 토큰을 생성
    
    res.cookie("x_auth", user.token)
    
@@ -120,9 +124,50 @@ app.post('/login', (req, res) => {
    })
    
    })
+
+// role 1 어드민 role 2 특정 부서 어드민
+
+// role 0 -> 일반유저 role 0 이 아니면 관리자 
+
+
+app.get('/api/users/auth', auth ,(req, res) => {
+
+    // 여기까지 통과했다는건 Authentication 이 True 라는 것.
+    res.status(200).json({
+        // 유저 정보들 제공 하면 됨 
+        //auth 에서 user._id 를 req 에 넣었기 때문에 req 사용 가능 . 
+        // 유저 정보를 가져온다. 
+        _id: req.user._id,
+        isAdmin: req.user.role === 0 ? false : true,
+        isAuth: true,
+        email: req.user.email,
+        name: req.user.name,
+        lastname: req.user.lastname,
+        role: req.user.role,
+        image: req.user.image
+
+    })
+
+})
+
+app.get('/api/users/logout', auth, (res, req) => {
+    // 유저를 찾아서 데이터를 업데이트 시켜준다. 
+    User.findOneAndUpdate({_id: req.user._id},
+        { token: "" }
+        , (err, user) => {
+            if (err) return res.json({ success: false, err});
+            return res.status(200).send({
+                success: true
+            })
+        })
+
+})
+
+
+
     
 
-    //3. 비밀번호가 맞다면 토큰을 생성
+    
 
 //응답이 올 때까지 기다리는 함수. 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
